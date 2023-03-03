@@ -9,6 +9,9 @@ key_u='e'
 key_d='q'
 key_t_l='n'
 key_t_r='m'
+k="v"
+f='b'
+
 class Hero():
     def __init__(self,pos,land):
         self.land=land
@@ -25,7 +28,7 @@ class Hero():
         base.camera.setH(180)
         base.camera.reparentTo(self.hero)
         base.camera.setPos(0,0,1.5)
-        base.camera.On=True
+        self.cameraOn=True
     def cameraUp(self):
         pos=self.hero.getPos()
         base.mouseInterfaceNode.setPos(-pos[0],-pos[1],-pos[2]-3)
@@ -56,6 +59,8 @@ class Hero():
     def move_to(self,angle):
         if self.mode:
             self.just_move(angle)
+        else:
+            self.try_move(angle)
     def check_dir(self,angle):
         if angle >=0 and angle <=20:
             return(0,-1)
@@ -87,6 +92,39 @@ class Hero():
     def right(self):
         angle=(self.hero.getH()+270) % 360
         self.move_to(angle)
+    def changeMode(self):
+        if self.mode:
+            self.mode=False
+        else:
+            self.mdoe=True
+    def try_move(self,angle):
+        pos=self.look_at(angle)
+        if self.land.isEmpty(pos):
+            pos=self.land.findGighestEmpty(pos)
+            self.gero.setPos(pos)
+        else:
+            pos=pos[0],pos[1],pos[2]+1
+            if self.land.isEmpty(pos):
+                self.hero.setPos(pos)
+    def up(self):
+        if self.mode:
+            self.hero.setZ(self.hero.getZ()+1)
+    def down(self):
+        if self.mode and self.hero.getZ()>1:
+            self.hero.setZ(self.hero.getZ()-1)
+    def build(self):
+        angle=self.hero.getH()%360
+        pos=self.look_at(angle)
+        if self.mode:
+            self.land.addBlock(pos)
+    def destroy(self):
+        angle=self.hero.getH()%360
+        pos=self.look_at(angle)
+        if self.mode:
+            self.land.delBlock(pos)
+        else:
+            self.land.delBlockFrom(pos)
+
     def accept_events(self):
         base.accept(key_t_l,self.turn_left)
         base.accept(key_t_l+'-repeat',self.turn_left)
@@ -101,5 +139,11 @@ class Hero():
         base.accept(key_r,self.right)
         base.accept(key_r+'-repeat',self.right)
         base.accept(key_s_c,self.changeView)
-
+        base.accept(key_s_m, self.changeMode)
+        base.accept(key_u,self.up)
+        base.accept(key_u+'-repeat',self.up)
+        base.accept(key_d,self.down)
+        base.accept(key_d+'-repeat',self.down)
+        base.accept(k,self.build)
+        base.accept(f,self.destroy)
     
